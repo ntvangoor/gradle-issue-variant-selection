@@ -1,0 +1,72 @@
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'maven-publish'
+    
+    group = 'test.group'
+    version = '1'
+
+    publishing.publications.create('publication', MavenPublication) {
+        from components.java
+    }
+}
+
+def myAttr = Attribute.of('my.attr', String)
+
+// create two configs and variants
+project(':test0') {
+    configurations {
+        for(i : 1..2)
+            create("config$i") { config ->
+                attributes {
+                    attribute(myAttr, 'test' + i)
+                }
+                components.java {
+                    addVariantsFromConfiguration(config) {}
+                }
+            }
+    }
+}
+
+// configure test1, test2 and test3 to depend on test0 with specific myAttr values
+for(value : [[1,1],[2,2],[3,1]])
+    project(":test${value[0]}") {
+        dependencies {
+            implementation('test.group:test0:1') {
+                attributes {
+                    attribute(myAttr, "test${value[1]}".toString())
+                }
+            }
+        }
+    }
+
+project(':test4') {
+    repositories { mavenLocal() }
+    dependencies { implementation 'test.group:test3:1' }
+}
+
+repositories { mavenLocal() }
+
+def resolveDependencies = { dependencyStrings ->
+    
+    Dependency[] dependencies = dependencyStrings.collect { dependency -> project.dependencies.create dependency }
+    def configuration = configurations.detachedConfiguration(dependencies)
+    
+    configuration.resolutionStrategy {
+        capabilitiesResolution.all {
+            select candidates[0]
+        }
+    }
+    configuration.resolve()
+}
+
+tasks.create('works') {
+    doFirst {
+        resolveDependencies(['test.group:test1:1', 'test.group:test2:1'])
+    }
+}
+
+tasks.create('fails') {
+    doFirst {
+        resolveDependencies(['test.group:test1:1', 'test.group:test2:1', 'test.group:test4:1'])
+    }
+}
