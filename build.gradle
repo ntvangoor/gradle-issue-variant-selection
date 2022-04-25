@@ -19,7 +19,6 @@ project(':test0') {
         }
         components.java {
             addVariantsFromConfiguration(config) {}
-            }
         }
     }
 }
