@@ -10,30 +10,27 @@ subprojects {
     }
 }
 
-def myAttr = Attribute.of('my.attr', String)
-
-// create two configs and variants
 project(':test0') {
     configurations {
-        for(i : 1..2)
-            create("config$i") { config ->
-                attributes {
-                    attribute(myAttr, 'test' + i)
-                }
-                components.java {
-                    addVariantsFromConfiguration(config) {}
-                }
+        create("shadowRuntimeElements") { config ->
+            attributes {
+                attribute(Bundling.BUNDLING_ATTRIBUTE, Bundling.SHADOWED)
             }
+        components.java {
+            addVariantsFromConfiguration(config) {}
+            }
+        }
     }
 }
 
-// configure test1, test2 and test3 to depend on test0 with specific myAttr values
-for(value : [[1,1],[2,2],[3,1]])
+// configure test1, test2 and test3 to depend on test0 of which test2 requests a shadowed variant
+for(i : 1..3)
     project(":test${value[0]}") {
         dependencies {
             implementation('test.group:test0:1') {
                 attributes {
-                    attribute(myAttr, "test${value[1]}".toString())
+                    if(i == 2)
+                        attribute(Bundling.BUNDLING_ATTRIBUTE, Bundling.SHADOWED)
                 }
             }
         }
