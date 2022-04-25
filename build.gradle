@@ -16,6 +16,7 @@ project(':test0') {
             attributes {
                 attribute(Bundling.BUNDLING_ATTRIBUTE, Bundling.SHADOWED)
             }
+        }
         components.java {
             addVariantsFromConfiguration(config) {}
             }
