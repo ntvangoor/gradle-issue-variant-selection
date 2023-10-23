@@ -1,7 +1,7 @@
 rootProject.name = 'test'
 
-include 'test0'
-include 'test1'
-include 'test2'
-include 'test3'
-include 'test4'
+include 'dependency0'
+include 'dependency1'
+include 'dependency2'
+include 'dependency3'
+include 'dependency4'
